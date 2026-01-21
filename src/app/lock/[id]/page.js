@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import Link from 'next/link';
 import Image from "next/image";
 
 const ViewLock = () => {
@@ -88,11 +87,7 @@ const ViewLock = () => {
                     </div>
                 )}
 
-                <footer className="pt-8">
-                    <Link href="/" className="text-[10px] font-bold text-pink-300/20 uppercase tracking-widest hover:text-pink-400 transition-colors">
-                        Create your own Love Lock
-                    </Link>
-                </footer>
+                
             </div>
         </div>
     );
