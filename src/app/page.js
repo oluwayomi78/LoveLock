@@ -124,7 +124,14 @@ const LoveLockPage = () => {
           </div>
 
           <button 
-            onClick={() => window.location.reload()} 
+            onClick={() => {
+              setCreatedLock(null);
+              setSender('');
+              setMessage('');
+              setSelectedSong(null);
+              setQuery('');
+              setResults([]);
+            }}
             className="mt-8 text-pink-300/30 text-[10px] font-bold hover:text-pink-300 uppercase tracking-widest"
           >
             Create Another Lock
