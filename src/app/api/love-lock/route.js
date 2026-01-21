@@ -41,6 +41,7 @@ export async function GET(req) {
     try {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get("id");
+        console.log("GET /api/love-lock called, ID:", id);
 
         if (!id) {
             return NextResponse.json({ error: "ID required" }, { status: 400 });

@@ -14,17 +14,20 @@ const ViewLock = () => {
     useEffect(() => {
         const fetchLock = async () => {
             try {
-                const res = await fetch(`/api/love-lock?id=${id}`, {
-                    cache: "no-store",
-                });
-
+                const res = await fetch(`/api/love-lock?id=${id}`, { cache: "no-store" });
                 const data = await res.json();
-                if (!res.ok) throw new Error(data.error);
 
-                setLock(data);
+                if (!res.ok || !data._id) {
+                    console.error("Lock not found or invalid:", data);
+                    setError(true);
+                    setLock(null);
+                } else {
+                    setLock(data);
+                }
             } catch (err) {
-                console.error(err);
+                console.error("Fetch error:", err);
                 setError(true);
+                setLock(null);
             } finally {
                 setLoading(false);
             }
@@ -52,16 +55,13 @@ const ViewLock = () => {
     return (
         <div className="min-h-screen w-full flex items-center justify-center bg-[#1e010a] p-6 text-center">
             <div className="max-w-md w-full space-y-8">
-
                 <div className="text-6xl animate-bounce">💖</div>
 
                 <div>
                     <h1 className="text-pink-300/50 uppercase tracking-widest text-[10px]">
                         A Secret Message From
                     </h1>
-                    <p className="text-4xl font-bold text-pink-100">
-                        {lock.sender}
-                    </p>
+                    <p className="text-4xl font-bold text-pink-100">{lock.sender}</p>
                 </div>
 
                 <div className="bg-[#500724]/60 p-8 rounded-[40px] border border-pink-500/20">
@@ -83,7 +83,6 @@ const ViewLock = () => {
                         <audio controls src={lock.song.url} className="w-full mt-2" />
                     </div>
                 )}
-
             </div>
         </div>
     );
