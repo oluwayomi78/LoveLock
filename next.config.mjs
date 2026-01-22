@@ -1,14 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '*.mzstatic.com', 
-      },
+      { protocol: "https", hostname: "*.mzstatic.com" },
     ],
   },
-  reactCompiler: true,
 };
 
 export default nextConfig;
