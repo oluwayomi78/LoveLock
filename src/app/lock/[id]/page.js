@@ -1,53 +1,86 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import Image from "next/image";
 
 const ViewLock = () => {
     const { id } = useParams();
+
     const [lock, setLock] = useState(null);
-    const [loading, setLoading] = useState(true);
+    const [senderInput, setSenderInput] = useState("");
+    const [loading, setLoading] = useState(false);
     const [error, setError] = useState(false);
+    const [unlocked, setUnlocked] = useState(false);
 
-    useEffect(() => {
-        const fetchLock = async () => {
-            try {
-                const res = await fetch(`/api/love-lock?id=${id}`, { cache: "no-store" });
-                const data = await res.json();
+    const fetchLock = async () => {
+        try {
+            setLoading(true);
+            setError(false);
 
-                if (!res.ok || !data._id) {
-                    console.error("Lock not found or invalid:", data);
-                    setError(true);
-                    setLock(null);
-                } else {
-                    setLock(data);
-                }
-            } catch (err) {
-                console.error("Fetch error:", err);
+            const res = await fetch(
+                `/api/love-lock?id=${id}&sender=${encodeURIComponent(senderInput)}`,
+                { cache: "no-store" }
+            );
+
+            const data = await res.json();
+
+            if (!res.ok || !data._id) {
                 setError(true);
-                setLock(null);
-            } finally {
-                setLoading(false);
+                return;
             }
-        };
 
-        if (id) fetchLock();
-    }, [id]);
+            setLock(data);
+            setUnlocked(true);
+        } catch (err) {
+            console.error("Fetch error:", err);
+            setError(true);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-    if (loading) {
+    if (!unlocked) {
         return (
-            <div className="min-h-screen w-full bg-[#1e010a] flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-pink-500"></div>
+            <div className="min-h-screen w-full bg-[#1e010a] flex items-center justify-center p-6">
+                <div className="bg-[#500724]/60 p-8 rounded-3xl w-full max-w-sm text-center space-y-5">
+                    <div className="text-5xl">🔒</div>
+
+                    <h2 className="text-pink-200 text-lg font-semibold">
+                        Who sent this Love Lock?
+                    </h2>
+
+                    <input
+                        type="text"
+                        placeholder="Enter sender's name"
+                        value={senderInput}
+                        onChange={(e) => setSenderInput(e.target.value)}
+                        className="w-full p-3 rounded-xl bg-black/40 text-pink-100 outline-none border border-pink-500/30"
+                    />
+
+                    {error && (
+                        <p className="text-red-400 text-sm">
+                            Wrong name 💔 Try again
+                        </p>
+                    )}
+
+                    <button
+                        onClick={() => senderInput && fetchLock()}
+                        disabled={loading}
+                        className="w-full py-3 rounded-xl bg-pink-600 hover:bg-pink-700 text-white font-semibold disabled:opacity-50"
+                    >
+                        {loading ? "Unlocking..." : "Unlock 💖"}
+                    </button>
+                </div>
             </div>
         );
     }
 
-    if (error || !lock) {
+    if (loading || !lock) {
         return (
-            <div className="min-h-screen w-full bg-[#1e010a] flex items-center justify-center text-pink-200">
-                <p>Lock not found or invalid link 💔</p>
+            <div className="min-h-screen w-full bg-[#1e010a] flex items-center justify-center">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-pink-500"></div>
             </div>
         );
     }
@@ -61,7 +94,9 @@ const ViewLock = () => {
                     <h1 className="text-pink-300/50 uppercase tracking-widest text-[10px]">
                         A Secret Message From
                     </h1>
-                    <p className="text-4xl font-bold text-pink-100">{lock.sender}</p>
+                    <p className="text-4xl font-bold text-pink-100">
+                        {lock.sender}
+                    </p>
                 </div>
 
                 <div className="bg-[#500724]/60 p-8 rounded-[40px] border border-pink-500/20">
