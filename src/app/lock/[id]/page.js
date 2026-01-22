@@ -19,9 +19,8 @@ const ViewLock = () => {
             setLoading(true);
             setError(false);
 
-            const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
             const res = await fetch(
-                `${baseUrl}/api/love-lock?id=${id}&sender=${encodeURIComponent(senderInput)}`,
+                `/api/love-lock?id=${id}&sender=${encodeURIComponent(senderInput)}`,
                 { cache: "no-store" }
             );
 
