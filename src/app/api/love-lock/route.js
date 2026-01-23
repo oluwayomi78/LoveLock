@@ -42,41 +42,36 @@ export async function GET(req) {
         const { searchParams } = new URL(req.url);
         const id = searchParams.get("id");
         const sender = searchParams.get("sender");
-
-        console.log("GET /api/love-lock called, ID:", id, "Sender:", sender);
-
-        if (!id) {
-            return NextResponse.json({ error: "ID required" }, { status: 400 });
-        }
-
-        if (!sender) {
-            return NextResponse.json(
-                { error: "Sender name required" },
-                { status: 401 }
-            );
-        }
+        const query = searchParams.get("search"); 
 
         await mongoose.connect(process.env.MONGODB_URI);
-        const lock = await LoveLock.findById(id);
 
-        if (!lock) {
-            return NextResponse.json({ error: "Not found" }, { status: 404 });
+        if (id) {
+            if (!sender) return NextResponse.json({ error: "Sender name required" }, { status: 401 });
+            const lock = await LoveLock.findById(id);
+            if (!lock) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
+            if (lock.sender.toLowerCase().trim() !== sender.toLowerCase().trim()) {
+                return NextResponse.json({ error: "Invalid sender name" }, { status: 401 });
+            }
+            return NextResponse.json(lock);
         }
 
-        if (
-            lock.sender.toLowerCase().trim() !==
-            sender.toLowerCase().trim()
-        ) {
-            return NextResponse.json(
-                { error: "Invalid sender name" },
-                { status: 401 }
-            );
+        let filter = {};
+        if (query) {
+            filter = { 
+                $or: [
+                    { message: { $regex: query, $options: "i" } },
+                    { sender: { $regex: query, $options: "i" } }
+                ] 
+            };
         }
 
-        return NextResponse.json(lock);
+        const locks = await LoveLock.find(filter).sort({ createdAt: -1 });
+        return NextResponse.json(locks);
 
     } catch (error) {
         console.error("Love lock error:", error);
-        return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+        return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
